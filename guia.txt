@@ -1,0 +1,147 @@
+I. Requisitos previos  (5 min)
+Antes de empezar, verifica que tienes instalado lo siguiente. Si algún comando falla, instala la herramienta antes de continuar.
+
+1.   Node.js LTS (incluye npm). Descarga: nodejs.org
+2.   Git. Descarga: git-scm.com
+3.   Visual Studio Code (o tu editor preferido).
+4.   Una cuenta en github.com (gratuita).
+
+Verifica las versiones en PowerShell:
+node -v
+npm -v
+git --version
+ 
+II. Inicializar el proyecto  (10 min)
+Objetivo: crear el proyecto Node.js con TypeScript estricto y módulos ES.
+
+1.   Crea la carpeta del proyecto y entra en ella.
+2.   Inicializa npm y declara el proyecto como módulos ES.
+3.   Instala express y las dependencias de desarrollo.
+4.   Genera el tsconfig.json y úsalo tal cual: ya viene con strict activado.
+
+Comandos (en orden):
+mkdir middleware-pe21
+cd middleware-pe21
+npm init -y
+npm pkg set type=module
+npm install express
+npm install --save-dev typescript tsx nodemon @types/express @types/node
+npx tsc --init
+
+La línea npm pkg set type=module agrega "type": "module" al package.json. Con eso Node.js trata todos los archivos como módulos ES: se usa import/export, nunca require().
+Sobre las herramientas de desarrollo: tsx ejecuta TypeScript sin compilar primero, y nodemon vigila tus archivos y reinicia el servidor cada vez que guardas un cambio. Las usarás juntas en la sección V.
+ 
+III. Implementar los middlewares  (15 min)
+Objetivo: escribir las dos funciones de intercepción en src/middlewares/.
+
+1.   Crea la carpeta src y dentro de ella la carpeta middlewares.
+2.   Crea el archivo src/middlewares/logger.ts con este contenido:
+src/middlewares/logger.ts
+import { Request, Response, NextFunction } from 'express';
+
+export function requestLogger(req: Request, res: Response, next: NextFunction): void {
+  const start = Date.now();
+  res.on('finish', () => {
+    console.log(`${req.method} ${req.path} -> ${res.statusCode} (${Date.now() - start}ms)`);
+  });
+  next();
+}
+
+3.   Crea el archivo src/middlewares/auth.ts con este contenido:
+src/middlewares/auth.ts
+import { Request, Response, NextFunction } from 'express';
+
+export function requireApiKey(req: Request, res: Response, next: NextFunction): void {
+  const key = req.headers['x-api-key'];
+  if (key !== 'secreto-demo') {
+    res.status(401).json({ error: 'API key inválida o ausente' });
+    return;
+  }
+  next();
+}
+
+El return después del 401 es obligatorio: sin él, la función seguiría ejecutándose después de enviar la respuesta y el servidor fallaría con "headers already sent".
+ 
+IV. Registrar el pipeline  (10 min)
+Objetivo: armar el pipeline en el orden canónico dentro de src/index.ts.
+
+1.   Crea el archivo src/index.ts con este contenido:
+src/index.ts
+import express, { Request, Response, NextFunction } from 'express';
+import { requestLogger } from './middlewares/logger.js';
+import { requireApiKey } from './middlewares/auth.js';
+
+const app = express();
+
+app.use(express.json());      // 1. Parseo del cuerpo
+app.use(requestLogger);       // 2. Logger
+app.use(requireApiKey);       // 3. Autenticación
+
+app.get('/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok', ts: new Date().toISOString() });
+});
+
+// Manejador de errores: siempre al final, con cuatro parámetros
+app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  res.status(500).json({ error: 'Error interno del servidor' });
+});
+
+app.listen(3000, () => console.log('Servidor en puerto 3000'));
+
+Observa los imports: terminan en .js aunque los archivos fuente son .ts. Es la regla de los módulos ES: la extensión es la del archivo que existe en tiempo de ejecución.
+ 
+V. Probar y documentar  (10 min)
+Objetivo: levantar el servidor, probar los tres escenarios y registrar la salida real en el README.md.
+
+1.   Agrega el script de desarrollo y arranca el servidor:
+Terminal 1:
+npm pkg set scripts.dev="nodemon --exec tsx src/index.ts"
+npm run dev
+
+Con nodemon no necesitas reiniciar a mano: al guardar cualquier archivo, el servidor se reinicia solo. Para detenerlo, presiona Ctrl+C en la terminal.
+2.   En otra terminal, ejecuta los tres escenarios y copia la salida de cada uno:
+Terminal 2:
+# (a) Sin API key -> esperado: 401
+curl http://localhost:3000/health
+
+# (b) Con clave válida -> esperado: 200
+curl -H "x-api-key: secreto-demo" http://localhost:3000/health
+
+# (c) Ruta inexistente -> esperado: 404
+curl -H "x-api-key: secreto-demo" http://localhost:3000/noexiste
+
+3.   Crea un README.md en la raíz del proyecto. Para cada escenario anota: el comando, la salida real de tu terminal y una línea explicando el resultado.
+4.   Verifica que el proyecto compila sin errores:
+Verificación final:
+npx tsc --noEmit
+ 
+VI. Subir el proyecto a GitHub  (10 min)
+Objetivo: publicar el repositorio y verificar que es accesible públicamente.
+
+A. Crear el repositorio en la web
+1.   Entra a github.com e inicia sesión.
+2.   Haz clic en el botón New (o el signo + arriba a la derecha, luego New repository).
+3.   Nombre del repositorio: middleware-pe21.
+4.   Visibilidad: Public. No marques ninguna casilla de inicialización (sin README, sin .gitignore): los crearás desde tu máquina.
+5.   Haz clic en Create repository y deja la pestaña abierta.
+
+B. Preparar y enviar el código desde tu máquina
+6.   En la raíz del proyecto, crea un archivo llamado .gitignore con estas dos líneas (evita subir las dependencias y el código compilado):
+.gitignore
+node_modules/
+dist/
+7.   Ejecuta los comandos siguientes, reemplazando TU-USUARIO por tu usuario de GitHub:
+Comandos git (en orden):
+git init
+git add .
+git commit -m "PE-2.1: servidor Express con middlewares"
+git branch -M main
+git remote add origin https://github.com/TU-USUARIO/middleware-pe21.git
+git push -u origin main
+
+Si git pide identificarte la primera vez, ejecuta git config --global user.name "Tu Nombre" y git config --global user.email "tu@correo.com", y repite el commit.
+
+C. Verificar el acceso público
+8.   Recarga la pestaña del repositorio: deben verse src/, package.json, tsconfig.json y README.md.
+9.   Abre la URL del repositorio en una ventana de incógnito. Si se ve sin iniciar sesión, el acceso público está confirmado. Esa URL es tu entregable.
+ 
