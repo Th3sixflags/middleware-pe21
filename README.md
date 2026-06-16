@@ -53,3 +53,25 @@ respuesta:
 ```
 {"error":"ruta no encontrada"}
 ```
+
+### output del deber "TA-2.1 Pruebas unitarias básicas"
+```
+chininin@192 api-steven % npm test
+
+> api-steven@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js
+
+ts-jest[config] (WARN) message TS151002: Using hybrid module kind (Node16/18/Next) is only supported in "isolatedModules: true". Please set "isolatedModules: true" in your tsconfig.json. To disable this message, you can set "diagnostics.ignoreCodes" to include 151002 in your ts-jest config. See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/options/diagnostics
+(node:49421) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ PASS  src/middlewares/logger.test.ts
+ts-jest[config] (WARN) message TS151002: Using hybrid module kind (Node16/18/Next) is only supported in "isolatedModules: true". Please set "isolatedModules: true" in your tsconfig.json. To disable this message, you can set "diagnostics.ignoreCodes" to include 151002 in your ts-jest config. See more at https://kulshekhar.github.io/ts-jest/docs/getting-started/options/diagnostics
+ PASS  src/middlewares/auth.test.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        0.821 s, estimated 1 s
+Ran all test suites.
+chininin@192 api-steven % 
+```
