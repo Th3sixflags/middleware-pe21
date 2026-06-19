@@ -75,3 +75,18 @@ Time:        0.821 s, estimated 1 s
 Ran all test suites.
 chininin@192 api-steven % 
 ```
+
+## Documentación del Endpoint
+
+**Método HTTP:** `GET`
+**Ruta:** `/health`
+
+**Descripción:** Retorna el estado de salud del servidor y la marca de tiempo actual
+
+**Datos de entrada:**
+- **Headers:** Requiere obligatoriamente la cabecera `x-api-key` para autenticación
+
+**Respuestas posibles:**
+- **200 OK:** Petición exitosa. Devuelve un objeto JSON con el estado "ok" y un timestamp
+- **401 Unauthorized:** Ocurre cuando la cabecera `x-api-key` es inválida o no se envía. Devuelve un objeto JSON con un mensaje de error
+

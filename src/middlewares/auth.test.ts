@@ -20,7 +20,7 @@ describe('Auth Middleware', () => {
     next = jest.fn();
   });
 
-  it('debe devolver status 401 si el header x-api-key está ausente', () => {
+  it('debe devolver status 401 si falta el header x-api-key', () => {
     requireApiKey(req as Request, res as Response, next);
     
     expect(statusMock).toHaveBeenCalledWith(401);
