@@ -76,17 +76,21 @@ Ran all test suites.
 chininin@192 api-steven % 
 ```
 
-## Documentación del Endpoint
+## Documentación del Endpoint (PE-2.2)
 
-**Método HTTP:** `GET`
-**Ruta:** `/health`
+* **Método HTTP:** `GET`
+* **Ruta:** `/health`
+* **Descripción:** Endpoint que verifica el estado de salud del servidor y retorna la marca de tiempo actual.
+* **Datos de entrada:** * **Headers:** Requiere la cabecera `x-api-key` para la autenticación. No recibe body ni parámetros en la URL.
+* **Respuesta exitosa:** * **200 OK:** Devuelve un JSON con el estado `ok` y el timestamp.
+* **Errores posibles:** * **401 Unauthorized:** Devuelve un JSON con un mensaje de error si la `x-api-key` no se envía o es incorrecta.
 
-**Descripción:** Retorna el estado de salud del servidor y la marca de tiempo actual
+## Versionado
 
-**Datos de entrada:**
-- **Headers:** Requiere obligatoriamente la cabecera `x-api-key` para autenticación
+**Ejemplo de cambio compatible (Backwards-compatible):**
+* **El cambio:** Agregar un nuevo campo llamado `"version": "1.0.0"` dentro del JSON de respuesta exitosa del endpoint `GET /health`.
+* **Justificación técnica:** Este cambio no rompe la compatibilidad porque las aplicaciones cliente que ya consumen esta API simplemente ignorarán el campo nuevo que no conocen. Seguirán recibiendo los campos `status` y `ts` que originalmente esperaban, por lo que su código no fallará.
 
-**Respuestas posibles:**
-- **200 OK:** Petición exitosa. Devuelve un objeto JSON con el estado "ok" y un timestamp
-- **401 Unauthorized:** Ocurre cuando la cabecera `x-api-key` es inválida o no se envía. Devuelve un objeto JSON con un mensaje de error
-
+**Ejemplo de cambio incompatible (Breaking change):**
+* **El cambio:** Cambiar el nombre de la cabecera de autenticación de `x-api-key` a `authorization-token`.
+* **Justificación técnica:** Este cambio rompería inmediatamente la integración. Todos los clientes que estén enviando sus peticiones usando la cabecera `x-api-key` empezarían a recibir errores `401 Unauthorized`, ya que el servidor ahora espera un nombre de cabecera distinto. Para hacer esto sin afectar a los usuarios actuales, habría que crear una nueva versión de la API (ej. `/v2/health`).
