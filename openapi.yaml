@@ -5,7 +5,68 @@ info:
   license:
     name: "MIT"
     identifier: "MIT"
-
 servers:
   - url: http://localhost:3000
     description: "Servidor Local"
+
+paths:
+  /health:
+    get:
+      summary: "Verificación de salud del servidor"
+      description: "Endpoint para comprobar que el servidor está en funcionamiento. Requiere API Key."
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: "El servidor está funcionando correctamente."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              examples:
+                Exito:
+                  value:
+                    status: "ok"
+                    ts: "2026-06-18T10:20:00Z"
+        '401':
+          description: "No autorizado. API key ausente o incorrecta."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                FalloAuth:
+                  value:
+                    error: "API key inválida o ausente"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: "Autenticación mediante clave de API."
+  
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - ts
+      properties:
+        status:
+          type: string
+          description: "Estado actual del servidor."
+        ts:
+          type: string
+          format: date-time
+          description: "Marca de tiempo en formato ISO."
+    
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: "Mensaje detallado del error."
