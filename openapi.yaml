@@ -27,7 +27,7 @@ paths:
                 Exito:
                   value:
                     status: "ok"
-                    ts: "2026-06-18T10:20:00Z"
+                    ts: "2026-06-23T15:00:00Z"
         '401':
           description: "No autorizado. API key ausente o incorrecta."
           content:
@@ -38,6 +38,96 @@ paths:
                 FalloAuth:
                   value:
                     error: "API key inválida o ausente"
+
+  /v1/inscripciones:
+    post:
+      summary: "Crear una inscripción (Versión 1)"
+      description: "Registra la inscripción de un estudiante en varias materias."
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscripcionV1Request'
+            examples:
+              PeticionV1:
+                value:
+                  estudianteId: "EST-001"
+                  materias: ["MAT-101", "MAT-102"]
+                  periodoId: "PER-2026A"
+      responses:
+        '201':
+          description: "Inscripción creada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscripcionV1Response'
+              examples:
+                ExitoV1:
+                  value:
+                    version: "v1"
+                    message:
+                      estudianteId: "EST-001"
+                      materias: ["MAT-101", "MAT-102"]
+                      periodoId: "PER-2026A"
+        '400':
+          description: "Error de validación por campos faltantes."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ErrorV1:
+                  value:
+                    error: "Campos requeridos del estudianteId, materias, periodoId"
+
+  /v2/inscripciones:
+    post:
+      summary: "Crear una inscripción (Versión 2)"
+      description: "Registra la inscripción de un estudiante incluyendo el método de pago obligatorio."
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InscripcionV2Request'
+            examples:
+              PeticionV2:
+                value:
+                  estudianteId: "EST-001"
+                  materias: ["MAT-101", "MAT-102"]
+                  periodoId: "PER-2026A"
+                  metodo_pago: "Transferencia"
+      responses:
+        '201':
+          description: "Inscripción creada exitosamente."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscripcionV2Response'
+              examples:
+                ExitoV2:
+                  value:
+                    version: "v2"
+                    message:
+                      estudianteId: "EST-001"
+                      materias: ["MAT-101", "MAT-102"]
+                      periodoId: "PER-2026A"
+                      metodo_pago: "Transferencia"
+        '400':
+          description: "Error de validación por campos faltantes o método de pago inválido."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ErrorV2:
+                  value:
+                    error: "El metodo de pago insertado debe ser: Efectivo, Débito, Crédito o Transferencia"
 
 components:
   securitySchemes:
@@ -56,11 +146,9 @@ components:
       properties:
         status:
           type: string
-          description: "Estado actual del servidor."
         ts:
           type: string
           format: date-time
-          description: "Marca de tiempo en formato ISO."
     
     ErrorResponse:
       type: object
@@ -69,4 +157,75 @@ components:
       properties:
         error:
           type: string
-          description: "Mensaje detallado del error."
+
+    InscripcionV1Request:
+      type: object
+      required:
+        - estudianteId
+        - materias
+        - periodoId
+      properties:
+        estudianteId:
+          type: string
+        materias:
+          type: array
+          items:
+            type: string
+        periodoId:
+          type: string
+
+    InscripcionV1Response:
+      type: object
+      properties:
+        version:
+          type: string
+        message:
+          type: object
+          properties:
+            estudianteId:
+              type: string
+            materias:
+              type: array
+              items:
+                type: string
+            periodoId:
+              type: string
+
+    InscripcionV2Request:
+      type: object
+      required:
+        - estudianteId
+        - materias
+        - periodoId
+        - metodo_pago
+      properties:
+        estudianteId:
+          type: string
+        materias:
+          type: array
+          items:
+            type: string
+        periodoId:
+          type: string
+        metodo_pago:
+          type: string
+          enum: ['Efectivo', 'Transferencia', 'Débito', 'Crédito']
+
+    InscripcionV2Response:
+      type: object
+      properties:
+        version:
+          type: string
+        message:
+          type: object
+          properties:
+            estudianteId:
+              type: string
+            materias:
+              type: array
+              items:
+                type: string
+            periodoId:
+              type: string
+            metodo_pago:
+              type: string
