@@ -94,3 +94,8 @@ chininin@192 api-steven %
 **Ejemplo de cambio incompatible (Breaking change):**
 * **El cambio:** Cambiar el nombre de la cabecera de autenticación de `x-api-key` a `authorization-token`.
 * **Justificación técnica:** Este cambio rompería inmediatamente la integración. Todos los clientes que estén enviando sus peticiones usando la cabecera `x-api-key` empezarían a recibir errores `401 Unauthorized`, ya que el servidor ahora espera un nombre de cabecera distinto. Para hacer esto sin afectar a los usuarios actuales, habría que crear una nueva versión de la API (ej. `/v2/health`).
+
+
+## Reflexión: Consumo de la API por terceros
+
+Si otro equipo de desarrollo empezara a consumir esta API mañana, lo primero que mejoraría en el contrato OpenAPI sería estandarizar y documentar los errores globales (como los fallos 500 de servidor o errores de CORS) para que el equipo frontend sepa cómo reaccionar ante caídas inesperadas. Además, en la sección de `servers`, agregaría una URL de un entorno de *Staging* (pruebas) en la nube, para que puedan probar sus integraciones sin tener que levantar el servidor localmente ni afectar una base de datos real. Finalmente, aseguraría que todos los campos del JSON tengan descripciones más restrictivas, como límites de caracteres o formatos exactos, para evitar que nos envíen datos basura.
