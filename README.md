@@ -104,3 +104,34 @@ Resultado de `npx @redocly/cli lint openapi.yaml`:
 ## Reflexión: si otro equipo consumiera esta API
 
 Si un equipo externo empezara a integrar esta API mañana, el primer cambio que haría al contrato OpenAPI sería agregar respuestas de error detalladas en /health: actualmente solo documenta que puede devolver 401, pero no especifica el formato del cuerpo de ese error. Un consumidor externo tendría que inspeccionar el codigo fuente o hacer pruebas manuales para saber que el cuerpo es { "error": "API key invalida o ausente" }. Documentarlo con un ejemplo en el YAML evita esa incertidumbre desde el primer dia.
+
+
+## Seguridad JWT (PE-2.3)
+
+### Generar un token de prueba
+
+```bash
+# Con el secreto por defecto del laboratorio:
+TOKEN=$(node generate-token.mjs)
+
+# Con secreto personalizado:
+JWT_SECRET=mi-secreto-largo TOKEN=$(node generate-token.mjs)
+```
+
+### Probar el servicio
+
+```bash
+# Peticion valida (esperado: 201)
+curl -X POST http://localhost:3000/v2/inscripciones \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"estudianteId":"uuid-123","materias":["LTI_05A_458"],"periodoId":"2026-1","payment_method":"scholarship"}'
+
+# Token invalido (esperado: 401)
+curl -X POST http://localhost:3000/v2/inscripciones \
+  -H "Authorization: Bearer token.invalido.xxx"
+```
+
+### Variables de entorno
+
+Copia `.env.example` a `.env` y configura `JWT_SECRET` con un valor secreto largo.
